@@ -1,89 +1,362 @@
 <!DOCTYPE html>
+<!-- Define que o documento usa HTML5 -->
+
 <html lang="pt-BR">
+<!-- Define o idioma da página -->
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Protocolo de Currículos</title>
-<link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <!-- Permite caracteres especiais e acentos -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Adapta o site para celular e outras telas -->
+
+    <title>Protocolo de Currículos</title>
+    <!-- Título exibido na aba do navegador -->
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Importa o arquivo CSS -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Importa as fontes utilizadas no projeto -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Importa a biblioteca usada para gerar PDFs -->
+
 </head>
+
 <body>
+
 <div class="app">
-  <div class="masthead">
-    <div class="title">Protocolo de Currículos</div>
-    <div class="proto">MOD. <b id="proto-model">—</b><br>ETEC · CADASTRO</div>
-  </div>
+<!-- Container principal do sistema -->
 
-  <section id="screen-welcome" class="screen active">
-    <p class="intro">Escolha o modelo de currículo. Foto é opcional.</p>
-    <div class="folders">
-      <button class="folder-card" data-model="formacao" onclick="goToForm('formacao')">
-        <span class="tab">MODELO 01</span>
-        <h3>Formação Acadêmica</h3>
-        <p>Ideal para primeiro emprego. Experiência opcional.</p>
-        <span class="go">Preencher este modelo</span>
-      </button>
-      <button class="folder-card" data-model="experiencia" onclick="goToForm('experiencia')">
-        <span class="tab">MODELO 02</span>
-        <h3>Formação Profissional</h3>
-        <p>Para quem já tem vivência profissional.</p>
-        <span class="go">Preencher este modelo</span>
-      </button>
+    <div class="masthead">
+    <!-- Cabeçalho do site -->
+
+        <div class="title">Protocolo de Currículos</div>
+        <!-- Nome do sistema -->
+
+        <div class="proto">
+            MOD. <b id="proto-model">—</b><br>
+            ETEC · CADASTRO
+        </div>
+        <!-- Mostra o modelo selecionado -->
+
     </div>
-  </section>
 
-  <section id="screen-form" class="screen">
-    <div class="form-head"><span class="chip" id="form-chip">MODELO</span><h2 id="form-title">Currículo</h2></div>
-    <form id="curriculo-form" novalidate>
-      <div class="card"><h4>Dados pessoais</h4>
-        <div class="grid">
-          <div class="field full"><label>Nome completo *</label><input id="f-nome"><div class="errmsg">Informe o nome.</div></div>
-          <div class="field"><label>CPF *</label><input id="f-cpf" maxlength="14" placeholder="000.000.000-00"><div class="errmsg">CPF inválido.</div></div>
-          <div class="field"><label>Idade *</label><input type="number" id="f-idade"><div class="errmsg">Idade inválida.</div></div>
-          <div class="field"><label>Cidade *</label><input id="f-cidade"><div class="errmsg">Informe a cidade.</div></div>
-          <div class="field"><label>Estado *</label><select id="f-estado"><option value="">Selecione</option><option>AC</option><option>AL</option><option>SP</option><option>MG</option><option>RJ</option></select><div class="errmsg">Selecione.</div></div>
-          <div class="field full"><label>E-mail *</label><input id="f-email" type="email"><div class="errmsg">E-mail inválido.</div></div>
-          <div class="field full"><label>Telefone (opcional)</label><input id="f-tel" placeholder="(00) 00000-0000"></div>
+    <section id="screen-welcome" class="screen active">
+    <!-- Tela inicial de escolha do modelo -->
+
+        <p class="intro">
+            Escolha o modelo de currículo. Foto é opcional.
+        </p>
+        <!-- Instrução para o usuário -->
+
+        <div class="folders">
+        <!-- Container dos modelos -->
+
+            <button class="folder-card"
+                    data-model="formacao"
+                    onclick="goToForm('formacao')">
+                <!-- Botão do modelo 01 -->
+
+                <span class="tab">MODELO 01</span>
+                <h3>Formação Acadêmica</h3>
+                <p>Ideal para primeiro emprego. Experiência opcional.</p>
+                <span class="go">Preencher este modelo</span>
+
+            </button>
+
+            <button class="folder-card"
+                    data-model="experiencia"
+                    onclick="goToForm('experiencia')">
+                <!-- Botão do modelo 02 -->
+
+                <span class="tab">MODELO 02</span>
+                <h3>Formação Profissional</h3>
+                <p>Para quem já tem vivência profissional.</p>
+                <span class="go">Preencher este modelo</span>
+
+            </button>
+
         </div>
-      </div>
 
-      <div class="card"><h4>Foto (opcional)</h4>
-        <div class="photo-row">
-          <div class="booth"><div class="placeholder" id="booth-placeholder">Sem foto</div><video id="video" autoplay playsinline style="display:none"></video><img id="photo-preview" style="display:none"></div>
-          <div class="booth-actions">
-            <input type="file" id="f-foto-file" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
-            <button type="button" class="btn stamp" onclick="toggleCamera()">Ativar câmera</button>
-            <button type="button" class="btn" onclick="document.getElementById('f-foto-file').click()">Escolher da galeria</button>
-            <button type="button" class="btn stamp" id="btn-capture" style="display:none" onclick="capturePhoto()">Capturar</button>
-            <button type="button" class="btn" id="btn-retake" style="display:none" onclick="retakePhoto()">Remover foto</button>
-            <p class="hint" id="camera-hint">Limite 2MB. Se não enviar, fica sem nada no PDF.</p>
-          </div>
+    </section>
+
+
+    <section id="screen-form" class="screen">
+    <!-- Tela do formulário -->
+
+        <div class="form-head">
+        <!-- Cabeçalho do formulário -->
+
+            <span class="chip" id="form-chip">MODELO</span>
+            <!-- Identificação do modelo -->
+
+            <h2 id="form-title">Currículo</h2>
+            <!-- Título do formulário -->
+
         </div>
-      </div>
 
-      <div class="card"><h4>Formação acadêmica *</h4>
-        <div class="grid">
-          <div class="field full"><label>Instituição *</label><input id="f-inst"><div class="errmsg">Informe.</div></div>
-          <div class="field"><label>Curso *</label><input id="f-curso"><div class="errmsg">Informe.</div></div>
-          <div class="field"><label>Ano / Situação *</label><input id="f-ano" placeholder="Ex: Cursando 2º Ano"><div class="errmsg">Informe.</div></div>
-        </div>
-      </div>
 
-      <div class="card"><h4>Conteúdo</h4>
-        <div class="field full" id="field-exp"><label>Experiência profissional <span id="exp-req-mark">*</span></label><textarea id="f-experiencia" rows="4" placeholder="Texto livre"></textarea><div class="errmsg">Informe a experiência.</div></div>
-        <div class="field full"><label>Habilidades (livre)</label><textarea id="f-habilidades" rows="3" placeholder="Ex: Informática Básica, Boa Comunicação"></textarea></div>
-        <div class="field full"><label>Idiomas (opcional - vai na lateral)</label><textarea id="f-idioma" rows="2" placeholder="Ex: Inglês - Básico, Português - Nativo"></textarea></div>
-      </div>
+        <form id="curriculo-form" novalidate>
+        <!-- Formulário principal -->
 
-      <div class="actions-row">
-        <button type="button" class="btn" onclick="goToWelcome()">← Voltar</button>
-        <button type="submit" class="btn-primary">Gerar PDF - 1 página</button>
-      </div>
-    </form>
-  </section>
+            <div class="card">
+            <!-- Seção de dados pessoais -->
+
+                <h4>Dados pessoais</h4>
+
+                <div class="grid">
+
+                    <div class="field full">
+                        <label>Nome completo *</label>
+                        <input id="f-nome">
+                        <div class="errmsg">Informe o nome.</div>
+                    </div>
+                    <!-- Campo de nome -->
+
+                    <div class="field">
+                        <label>CPF *</label>
+                        <input id="f-cpf" maxlength="14"
+                               placeholder="000.000.000-00">
+                        <div class="errmsg">CPF inválido.</div>
+                    </div>
+                    <!-- Campo de CPF -->
+
+                    <div class="field">
+                        <label>Idade *</label>
+                        <input type="number" id="f-idade">
+                        <div class="errmsg">Idade inválida.</div>
+                    </div>
+                    <!-- Campo de idade -->
+
+                    <div class="field">
+                        <label>Cidade *</label>
+                        <input id="f-cidade">
+                        <div class="errmsg">Informe a cidade.</div>
+                    </div>
+                    <!-- Campo de cidade -->
+
+                    <div class="field">
+                        <label>Estado *</label>
+                        <select id="f-estado">
+                            <option value="">Selecione</option>
+                            <option>AC</option>
+                            <option>AL</option>
+                            <option>SP</option>
+                            <option>MG</option>
+                            <option>RJ</option>
+                        </select>
+                        <div class="errmsg">Selecione.</div>
+                    </div>
+                    <!-- Campo de estado -->
+
+                    <div class="field full">
+                        <label>E-mail *</label>
+                        <input id="f-email" type="email">
+                        <div class="errmsg">E-mail inválido.</div>
+                    </div>
+                    <!-- Campo de e-mail -->
+
+                    <div class="field full">
+                        <label>Telefone (opcional)</label>
+                        <input id="f-tel"
+                               placeholder="(00) 00000-0000">
+                    </div>
+                    <!-- Campo de telefone -->
+
+                </div>
+            </div>
+
+
+            <div class="card">
+            <!-- Seção da foto -->
+
+                <h4>Foto (opcional)</h4>
+
+                <div class="photo-row">
+
+                    <div class="booth">
+                    <!-- Área onde a foto será exibida -->
+
+                        <div class="placeholder"
+                             id="booth-placeholder">
+                            Sem foto
+                        </div>
+
+                        <video id="video"
+                               autoplay
+                               playsinline
+                               style="display:none">
+                        </video>
+                        <!-- Exibe a câmera -->
+
+                        <img id="photo-preview"
+                             style="display:none">
+                        <!-- Exibe a foto escolhida -->
+
+                    </div>
+
+                    <div class="booth-actions">
+
+                        <input type="file"
+                               id="f-foto-file"
+                               accept="image/*"
+                               style="display:none"
+                               onchange="handleFileSelect(event)">
+                        <!-- Input para escolher uma imagem -->
+
+                        <button type="button"
+                                class="btn stamp"
+                                onclick="toggleCamera()">
+                            Ativar câmera
+                        </button>
+                        <!-- Ativa a câmera -->
+
+                        <button type="button"
+                                class="btn"
+                                onclick="document.getElementById('f-foto-file').click()">
+                            Escolher da galeria
+                        </button>
+                        <!-- Abre a galeria -->
+
+                        <button type="button"
+                                class="btn stamp"
+                                id="btn-capture"
+                                style="display:none"
+                                onclick="capturePhoto()">
+                            Capturar
+                        </button>
+                        <!-- Captura a foto -->
+
+                        <button type="button"
+                                class="btn"
+                                id="btn-retake"
+                                style="display:none"
+                                onclick="retakePhoto()">
+                            Remover foto
+                        </button>
+                        <!-- Remove a foto -->
+
+                        <p class="hint" id="camera-hint">
+                            Limite 2MB. Se não enviar, fica sem nada no PDF.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+            <!-- Seção de formação acadêmica -->
+
+                <h4>Formação acadêmica *</h4>
+
+                <div class="grid">
+
+                    <div class="field full">
+                        <label>Instituição *</label>
+                        <input id="f-inst">
+                        <div class="errmsg">Informe.</div>
+                    </div>
+                    <!-- Instituição -->
+
+                    <div class="field">
+                        <label>Curso *</label>
+                        <input id="f-curso">
+                        <div class="errmsg">Informe.</div>
+                    </div>
+                    <!-- Curso -->
+
+                    <div class="field">
+                        <label>Ano / Situação *</label>
+                        <input id="f-ano"
+                               placeholder="Ex: Cursando 2º Ano">
+                        <div class="errmsg">Informe.</div>
+                    </div>
+                    <!-- Ano ou situação do curso -->
+
+                </div>
+            </div>
+
+
+            <div class="card">
+            <!-- Seção de experiências e outras informações -->
+
+                <h4>Conteúdo</h4>
+
+                <div class="field full" id="field-exp">
+                    <label>
+                        Experiência profissional
+                        <span id="exp-req-mark">*</span>
+                    </label>
+
+                    <textarea id="f-experiencia"
+                              rows="4"
+                              placeholder="Texto livre"></textarea>
+
+                    <div class="errmsg">
+                        Informe a experiência.
+                    </div>
+                </div>
+                <!-- Experiência profissional -->
+
+                <div class="field full">
+                    <label>Habilidades (livre)</label>
+
+                    <textarea id="f-habilidades"
+                              rows="3"
+                              placeholder="Ex: Informática Básica, Boa Comunicação">
+                    </textarea>
+                </div>
+                <!-- Habilidades -->
+
+                <div class="field full">
+                    <label>
+                        Idiomas (opcional - vai na lateral)
+                    </label>
+
+                    <textarea id="f-idioma"
+                              rows="2"
+                              placeholder="Ex: Inglês - Básico, Português - Nativo">
+                    </textarea>
+                </div>
+                <!-- Idiomas -->
+
+            </div>
+
+
+            <div class="actions-row">
+            <!-- Botões finais -->
+
+                <button type="button"
+                        class="btn"
+                        onclick="goToWelcome()">
+                    ← Voltar
+                </button>
+                <!-- Volta para a tela inicial -->
+
+                <button type="submit"
+                        class="btn-primary">
+                    Gerar PDF - 1 página
+                </button>
+                <!-- Envia o formulário para gerar o PDF -->
+
+            </div>
+
+        </form>
+
+    </section>
+
 </div>
+
+
 <canvas id="capture-canvas" style="display:none"></canvas>
+<!-- Canvas utilizado para capturar/processar a foto -->
+
 <script src="script.js"></script>
+<!-- Importa o JavaScript principal do projeto -->
+
 </body>
 </html>
