@@ -424,10 +424,9 @@ body {
 
 .photo-row {
     display: flex;
-
     gap: 16px;
-
     align-items: flex-start;
+
     /* Organiza a área da foto e seus botões */
 }
 
@@ -443,23 +442,16 @@ body {
 
 .booth {
     width: 220px;
-
     height: 220px;
-
     border: 1px dashed var(--line);
-
-    border-radius: 16px;
-
+    border-radius: 50%;
     background: var(--paper);
 
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
     overflow: hidden;
-
     position: relative;
     /* Área onde a foto/câmera aparece */
 }
@@ -478,10 +470,9 @@ body {
 .booth video,
 .booth img {
     width: 100%;
-
     height: 100%;
-
     object-fit: cover;
+    border-radius: 50%;
     /* Faz a imagem/vídeo ocupar toda a área */
 }
 
