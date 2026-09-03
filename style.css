@@ -39,8 +39,8 @@ body {
     color: var(--ink);
     /* Cor padrão dos textos */
 
-    font-family: "IBM Plex Sans", system-ui, sans-serif;
-    /* Fonte principal do site */
+     font-family: Arial, Calibri, "Times New Roman", sans-serif;
+     font-size: 10pt;
 }
 
 
@@ -566,4 +566,132 @@ body {
 
     margin-top: 12px;
     /* Organiza os botões Voltar e Gerar PDF */
+}
+
+/* ================================
+   FORMAÇÕES ACADÊMICAS
+================================ */
+
+#formacoes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.formacao-item {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.formacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.formacao-header h4 {
+    margin: 0;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+
+/* ================================
+   BOTÃO ADICIONAR FORMAÇÃO
+================================ */
+
+.btn-adicionar {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px 14px;
+
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+
+    background: transparent;
+    color: var(--ink);
+
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-adicionar:hover {
+    background: var(--paper);
+    border-color: var(--ink-muted);
+    transform: translateY(-1px);
+}
+
+.btn-adicionar:active {
+    transform: translateY(0);
+}
+
+
+/* ================================
+   BOTÃO REMOVER FORMAÇÃO
+================================ */
+
+.btn-remover-formacao {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+
+    background: transparent;
+    color: var(--ink-muted);
+
+    padding: 6px 10px;
+
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-remover-formacao:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--ink-muted);
+}
+
+
+/* ================================
+   RESPONSIVIDADE
+================================ */
+
+@media (max-width: 700px) {
+
+    .formacao-header {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .formacao-header h4 {
+        font-size: 13px;
+    }
+
+    .btn-remover-formacao {
+        font-size: 9px;
+        padding: 5px 9px;
+    }
+
+    .btn-adicionar {
+        font-size: 11px;
+    }
+}
+
+h1, h2, h3,
+.section-title,
+label,
+p,
+span,
+div {
+    font-family: Arial, Calibri, "Times New Roman", sans-serif;
 }

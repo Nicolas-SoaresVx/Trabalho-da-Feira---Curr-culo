@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <!-- Define que o documento usa HTML5 -->
 
@@ -116,7 +117,6 @@
                     </div>
                     <!-- Campo de nome -->
 
-                    
 
                     <div class="field">
                         <label>Idade *</label>
@@ -155,13 +155,12 @@
 
                     <div class="field full">
                         <label>Telefone *</label>
-                        <input id="f-tel" 
+                        <input id="f-tel"
                                type="tel"
                                placeholder="(00) 00000-0000"
                                required>
                     </div>
                     <!-- Campo de telefone -->
-                    
 
                 </div>
             </div>
@@ -244,41 +243,77 @@
                 </div>
             </div>
 
+                            <!-- Objetivo profissional -->
+                <div class="card">
+
+                    <h4>Objetivo Profissional</h4>
+
+                    <div class="field full">
+
+                        <label>Objetivo profissional *</label>
+
+                        <textarea
+                            id="f-objetivo"
+                            rows="3"
+                            placeholder="Descreva seu objetivo profissional...">
+                        </textarea>
+
+                        <div class="errmsg">
+                            Informe seu objetivo profissional.
+                        </div>
+
+                    </div>
+
+                </div>
 
             <div class="card">
             <!-- Seção de formação acadêmica -->
 
                 <h4>Formação acadêmica *</h4>
 
-                <div class="grid">
+                <!--
+                    Container das formações.
+                    A primeira formação já fica preenchida aqui.
+                    As próximas serão adicionadas pelo JavaScript.
+                -->
+                <div id="formacoes-container">
 
-                    <div class="field full">
-                        <label>Instituição *</label>
-                        <input id="f-inst">
-                        <div class="errmsg">Informe.</div>
+                    <div class="formacao-item">
+
+                       <div class="grid">
+
+                        <div class="field full">
+                            <label>Instituição *</label>
+                            <input id="f-inst">
+                            <div class="errmsg">Informe.</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Curso *</label>
+                            <input id="f-curso">
+                            <div class="errmsg">Informe.</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Ano / Situação *</label>
+                            <input id="f-ano"
+                                placeholder="Ex: Cursando 2º Ano">
+                            <div class="errmsg">Informe.</div>
+                        </div>
+
                     </div>
-                    <!-- Instituição -->
 
-                    <div class="field">
-                        <label>Curso *</label>
-                        <input id="f-curso">
-                        <div class="errmsg">Informe.</div>
-                    </div>
-                    <!-- Curso -->
+                            <!-- FORMAÇÕES ADICIONAIS -->
+                    <div id="formacoes-adicionais"></div>
 
-                    <div class="field">
-                        <label>Ano / Situação *</label>
-                        <input id="f-ano"
-                               placeholder="Ex: Cursando 2º Ano">
-                        <div class="errmsg">Informe.</div>
-                    </div>
-                    <!-- Ano ou situação do curso -->
-
-                </div>
-
-                <button type="button" id="btn-adicionar">Adicionar outra formação</button>
-
-            </div>
+                        <button
+                            type="button"
+                            id="btn-adicionar"
+                            class="btn btn-add-formacao"
+                            onclick="adicionarFormacao()">
+                            + Adicionar outra formação
+                        </button>
+                     </div>
 
 
             <div class="card">
@@ -302,27 +337,31 @@
                 </div>
                 <!-- Experiência profissional -->
 
-                <div class="field full">
-                    <label>Habilidades (livre)</label>
+                <!-- Habilidades e competências -->
+                    <div class="field full">
 
-                    <textarea id="f-habilidades"
-                              rows="3"
-                              placeholder="Ex: Informática Básica, Boa Comunicação">
-                    </textarea>
-                </div>
-                <!-- Habilidades -->
+                        <label>Habilidades e competências</label>
 
-                <div class="field full">
-                    <label>
-                        Idiomas (opcional - vai na lateral)
-                    </label>
+                        <textarea
+                            id="f-habilidades"
+                            rows="4"
+                            placeholder="Ex: Boa comunicação, trabalho em equipe, organização, informática...">
+                        </textarea>
 
-                    <textarea id="f-idioma"
-                              rows="2"
-                              placeholder="Ex: Inglês - Básico, Português - Nativo">
-                    </textarea>
-                </div>
-                <!-- Idiomas -->
+                    </div>
+
+                                    <!-- Cursos e certificações -->
+                    <div class="field full">
+
+                        <label>Cursos e certificações</label>
+
+                        <textarea
+                            id="f-cursos"
+                            rows="4"
+                            placeholder="Ex: Excel Básico - Fundação Bradesco&#10;Curso de Inglês - Wizard&#10;Informática Básica - SENAI">
+                        </textarea>
+
+                    </div>
 
             </div>
 
@@ -360,3 +399,4 @@
 
 </body>
 </html>
+```

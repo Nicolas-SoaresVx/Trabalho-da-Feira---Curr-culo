@@ -1,949 +1,2121 @@
-/* =========================
-   VARIÁVEIS PRINCIPAIS
-   ========================= */
+/* =========================================================
+   PROTOCOLO DE CURRÍCULOS
+   JavaScript principal
+   ========================================================= */
 
-// Modelo de currículo selecionado
+
+/* =========================================================
+   VARIÁVEIS PRINCIPAIS
+   ========================================================= */
+
 let currentModel = 'formacao';
 
-// Guarda o acesso à câmera
 let stream = null;
 
-// Guarda a foto em formato Data URL
 let photoDataUrl = null;
 
+let contadorFormacoes = 0;
 
-/* =========================
+
+/* =========================================================
    INFORMAÇÕES DOS MODELOS
-   ========================= */
+   ========================================================= */
 
 const MODEL_INFO = {
-  // Modelo para quem não possui experiência
-  formacao: {
-    name:'Somente formação acadêmica',
-    color:'#c0e0fc',
-    code:'01-FORMACAO'
-  },
 
-  // Modelo para quem possui experiência
-  experiencia: {
-    name:'Com experiência',
-    color:'#c0e0fc',
-    code:'02-EXPERIENCIA'
-  }
+    formacao: {
+        name: 'Somente formação acadêmica',
+        color: '#c0e0fc',
+        code: '01-FORMACAO'
+    },
+
+    experiencia: {
+        name: 'Com experiência',
+        color: '#c0e0fc',
+        code: '02-EXPERIENCIA'
+    }
+
 };
 
 
-/* =========================
-   NAVEGAÇÃO ENTRE TELAS
-   ========================= */
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
 
-// Abre o formulário do modelo escolhido
-function goToForm(model){
-  currentModel = model;
+function goToForm(model) {
 
-  const info = MODEL_INFO[model];
+    currentModel = model;
 
-  document.getElementById('screen-welcome').classList.remove('active');
-  document.getElementById('screen-form').classList.add('active');
+    const info = MODEL_INFO[model];
 
-  document.getElementById('screen-form')
-    .style.setProperty('--model-color', info.color);
+    document
+        .getElementById('screen-welcome')
+        .classList.remove('active');
 
-  document.getElementById('form-chip').textContent =
-    'MODELO ' + (model==='formacao'?'01':'02');
+    document
+        .getElementById('screen-form')
+        .classList.add('active');
 
-  document.getElementById('form-title').textContent = info.name;
+    document
+        .getElementById('screen-form')
+        .style
+        .setProperty('--model-color', info.color);
 
-  document.getElementById('proto-model').textContent = info.code;
+    document
+        .getElementById('form-chip')
+        .textContent =
+        'MODELO ' + (model === 'formacao' ? '01' : '02');
 
-  const isFormacao = model==='formacao';
+    document
+        .getElementById('form-title')
+        .textContent = info.name;
 
-  // Mostra o campo de experiência nos dois modelos
-  document.getElementById('field-exp').style.display =
-    isFormacao? 'block' : 'block';
+    document
+        .getElementById('proto-model')
+        .textContent = info.code;
 
-  // O "*" aparece somente no modelo que exige experiência
-  document.getElementById('exp-req-mark').style.display =
-    isFormacao? 'none' : 'inline';
+    const campoExperiencia =
+        document.getElementById('field-exp');
 
-  document.getElementById('exp-req-mark').textContent = '*';
+    const marcaObrigatorio =
+        document.getElementById('exp-req-mark');
 
-  resetForm();
+    if (campoExperiencia) {
+        campoExperiencia.style.display = 'block';
+    }
+
+    if (marcaObrigatorio) {
+
+        marcaObrigatorio.style.display =
+            model === 'experiencia'
+                ? 'inline'
+                : 'none';
+
+        marcaObrigatorio.textContent = '*';
+    }
+
+    resetForm();
 }
 
 
-// Volta para a tela inicial
-function goToWelcome(){
-  stopCamera();
+function goToWelcome() {
 
-  document.getElementById('screen-form').classList.remove('active');
-  document.getElementById('screen-welcome').classList.add('active');
-}
-
-
-/* =========================
-   RESET DO FORMULÁRIO
-   ========================= */
-
-// Limpa os dados do formulário e da foto
-function resetForm(){
-
-  document.getElementById('curriculo-form').reset();
-
-  // Remove os erros dos campos
-  document.querySelectorAll('.err')
-    .forEach(el=>el.classList.remove('err'));
-
-  document.querySelectorAll('.errmsg')
-    .forEach(el=>el.classList.remove('show'));
-
-  photoDataUrl=null;
-
-  stopCamera();
-
-  // Limpa a visualização da foto
-  const pv=document.getElementById('photo-preview');
-  pv.style.display='none';
-  pv.src='';
-
-  document.getElementById('booth-placeholder').style.display='flex';
-  document.getElementById('video').style.display='none';
-
-  document.getElementById('btn-capture').style.display='none';
-  document.getElementById('btn-retake').style.display='none';
-}
-
-
-/* =========================
-   MÁSCARA DO CPF
-   ========================= */
-
-// Formata o CPF enquanto o usuário digita
-document.getElementById('f-cpf').addEventListener('input', e=>{
-
-  // Remove tudo que não for número
-  let v=e.target.value.replace(/\D/g,'').slice(0,11);
-
-  // Adiciona pontos e hífen
-  v=v.replace(/(\d{3})(\d)/,'$1.$2')
-     .replace(/(\d{3})(\d)/,'$1.$2')
-     .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
-
-  e.target.value=v;
-});
-
-
-/* =========================
-   CÂMERA
-   ========================= */
-
-// Ativa ou desativa a câmera
-async function toggleCamera(){
-
-  // Se a câmera já estiver ativa, desativa
-  if(stream){
     stopCamera();
-    return;
-  }
 
-  try{
+    document
+        .getElementById('screen-form')
+        .classList.remove('active');
 
-    // Solicita acesso à câmera
-    stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'user'}
-    });
-
-    const video=document.getElementById('video');
-
-    video.srcObject=stream;
-
-    await video.play();
-
-    // Mostra a câmera
-    video.style.display='block';
-
-    document.getElementById('booth-placeholder').style.display='none';
-    document.getElementById('photo-preview').style.display='none';
-
-    document.getElementById('btn-capture').style.display='inline-block';
-
-  }catch{
-    // Caso não seja possível acessar a câmera
-    alert('Não foi possível acessar a câmera');
-  }
+    document
+        .getElementById('screen-welcome')
+        .classList.add('active');
 }
 
 
-// Desliga a câmera
-function stopCamera(){
+/* =========================================================
+   RESET
+   ========================================================= */
 
-  if(stream){
-    stream.getTracks().forEach(t=>t.stop());
-    stream=null;
-  }
+function resetForm() {
 
-  document.getElementById('video').style.display='none';
+    const form =
+        document.getElementById('curriculo-form');
 
-  document.getElementById('btn-capture').style.display='none';
+    if (form) {
+        form.reset();
+    }
+
+    const formacoes =
+        document.getElementById('formacoes-adicionais');
+
+    if (formacoes) {
+        formacoes.innerHTML = '';
+    }
+
+    contadorFormacoes = 0;
+
+    document
+        .querySelectorAll('.err')
+        .forEach(element => {
+            element.classList.remove('err');
+        });
+
+    document
+        .querySelectorAll('.errmsg')
+        .forEach(element => {
+            element.classList.remove('show');
+        });
+
+    photoDataUrl = null;
+
+    stopCamera();
+
+    const preview =
+        document.getElementById('photo-preview');
+
+    if (preview) {
+        preview.style.display = 'none';
+        preview.src = '';
+    }
+
+    const placeholder =
+        document.getElementById('booth-placeholder');
+
+    if (placeholder) {
+        placeholder.style.display = 'flex';
+    }
+
+    const video =
+        document.getElementById('video');
+
+    if (video) {
+        video.style.display = 'none';
+    }
+
+    const capture =
+        document.getElementById('btn-capture');
+
+    if (capture) {
+        capture.style.display = 'none';
+    }
+
+    const retake =
+        document.getElementById('btn-retake');
+
+    if (retake) {
+        retake.style.display = 'none';
+    }
 }
 
 
-/* =========================
+/* =========================================================
+   CÂMERA
+   ========================================================= */
+
+async function toggleCamera() {
+
+    if (stream) {
+
+        stopCamera();
+
+        return;
+    }
+
+    try {
+
+        stream =
+            await navigator
+                .mediaDevices
+                .getUserMedia({
+                    video: {
+                        facingMode: 'user'
+                    }
+                });
+
+        const video =
+            document.getElementById('video');
+
+        video.srcObject = stream;
+
+        await video.play();
+
+        video.style.display = 'block';
+
+        document
+            .getElementById('booth-placeholder')
+            .style.display = 'none';
+
+        document
+            .getElementById('photo-preview')
+            .style.display = 'none';
+
+        document
+            .getElementById('btn-capture')
+            .style.display = 'inline-block';
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            'Não foi possível acessar a câmera.'
+        );
+    }
+}
+
+
+function stopCamera() {
+
+    if (stream) {
+
+        stream
+            .getTracks()
+            .forEach(track => track.stop());
+
+        stream = null;
+    }
+
+    const video =
+        document.getElementById('video');
+
+    if (video) {
+        video.style.display = 'none';
+        video.srcObject = null;
+    }
+
+    const capture =
+        document.getElementById('btn-capture');
+
+    if (capture) {
+        capture.style.display = 'none';
+    }
+}
+
+
+/* =========================================================
    CAPTURA DA FOTO
-   ========================= */
+   ========================================================= */
 
-// Captura uma foto utilizando a câmera
-function capturePhoto(){
+function capturePhoto() {
 
-  const video=document.getElementById('video');
-  const canvas=document.getElementById('capture-canvas');
+    const video =
+        document.getElementById('video');
 
-  // Define o tamanho do canvas de acordo com o vídeo
-  canvas.width=video.videoWidth;
-  canvas.height=video.videoHeight;
+    const canvas =
+        document.getElementById('capture-canvas');
 
-  // Desenha a imagem da câmera no canvas
-  canvas.getContext('2d').drawImage(video,0,0);
+    if (
+        !video ||
+        !canvas ||
+        !video.videoWidth ||
+        !video.videoHeight
+    ) {
+        return;
+    }
 
-  // Converte a imagem para JPEG
-  photoDataUrl=canvas.toDataURL('image/jpeg',0.85);
+    canvas.width = video.videoWidth;
 
-  // Mostra a foto capturada
-  const pv=document.getElementById('photo-preview');
+    canvas.height = video.videoHeight;
 
-  pv.src=photoDataUrl;
-  pv.style.display='block';
+    const context =
+        canvas.getContext('2d');
 
-  video.style.display='none';
+    context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-  stopCamera();
+    photoDataUrl =
+        canvas.toDataURL(
+            'image/jpeg',
+            0.90
+        );
 
-  document.getElementById('btn-retake').style.display='inline-block';
-  document.getElementById('booth-placeholder').style.display='none';
+    const preview =
+        document.getElementById('photo-preview');
+
+    preview.src = photoDataUrl;
+
+    preview.style.display = 'block';
+
+    stopCamera();
+
+    document
+        .getElementById('booth-placeholder')
+        .style.display = 'none';
+
+    document
+        .getElementById('btn-retake')
+        .style.display = 'inline-block';
 }
 
 
-/* =========================
+/* =========================================================
    FOTO DA GALERIA
-   ========================= */
+   ========================================================= */
 
-// Processa uma imagem escolhida pelo usuário
-function handleFileSelect(e){
+function handleFileSelect(event) {
 
-  const file=e.target.files[0];
+    const file =
+        event.target.files[0];
 
-  if(!file) return;
+    if (!file) {
+        return;
+    }
 
-  // Limita o tamanho da imagem a 2MB
-  if(file.size > 2*1024*1024){
-    alert('Imagem muito grande. Máximo 2MB.');
-    return;
-  }
+    if (!file.type.startsWith('image/')) {
 
-  const reader=new FileReader();
+        alert(
+            'Selecione um arquivo de imagem.'
+        );
 
-  reader.onload=ev=>{
+        return;
+    }
 
-    // Guarda a imagem
-    photoDataUrl=ev.target.result;
+    if (file.size > 5 * 1024 * 1024) {
 
-    // Mostra a imagem escolhida
-    const pv=document.getElementById('photo-preview');
+        alert(
+            'Imagem muito grande. Máximo 5MB.'
+        );
 
-    pv.src=photoDataUrl;
-    pv.style.display='block';
+        return;
+    }
 
-    document.getElementById('booth-placeholder').style.display='none';
-    document.getElementById('video').style.display='none';
+    const reader =
+        new FileReader();
 
-    document.getElementById('btn-retake').style.display='inline-block';
-  };
+    reader.onload = function (event) {
 
-  reader.readAsDataURL(file);
+        photoDataUrl =
+            event.target.result;
+
+        const preview =
+            document.getElementById(
+                'photo-preview'
+            );
+
+        preview.src = photoDataUrl;
+
+        preview.style.display = 'block';
+
+        document
+            .getElementById(
+                'booth-placeholder'
+            )
+            .style.display = 'none';
+
+        document
+            .getElementById('video')
+            .style.display = 'none';
+
+        document
+            .getElementById('btn-retake')
+            .style.display = 'inline-block';
+    };
+
+    reader.readAsDataURL(file);
 }
 
 
-/* =========================
-   REMOVER FOTO
-   ========================= */
+/* =========================================================
+   REMOVER / TROCAR FOTO
+   ========================================================= */
 
-// Remove a foto selecionada
-function retakePhoto(){
+function retakePhoto() {
 
-  photoDataUrl=null;
+    photoDataUrl = null;
 
-  document.getElementById('photo-preview').style.display='none';
+    const preview =
+        document.getElementById(
+            'photo-preview'
+        );
 
-  document.getElementById('booth-placeholder').style.display='flex';
+    preview.style.display = 'none';
 
-  document.getElementById('btn-retake').style.display='none';
+    preview.src = '';
 
-  document.getElementById('f-foto-file').value='';
+    document
+        .getElementById(
+            'booth-placeholder'
+        )
+        .style.display = 'flex';
+
+    document
+        .getElementById(
+            'btn-retake'
+        )
+        .style.display = 'none';
+
+    const file =
+        document.getElementById(
+            'f-foto-file'
+        );
+
+    if (file) {
+        file.value = '';
+    }
 }
 
 
-/* =========================
-   VALIDAÇÃO DOS CAMPOS
-   ========================= */
+/* =========================================================
+   FORMAÇÕES ADICIONAIS
+   ========================================================= */
 
-// Adiciona ou remove o estado de erro de um campo
-function setError(input, has){
+function adicionarFormacao() {
 
-  input.classList.toggle('err', has);
+    const container =
+        document.getElementById(
+            'formacoes-adicionais'
+        );
 
-  const msg=input.parentElement.querySelector('.errmsg');
+    if (!container) {
 
-  if(msg)
-    msg.classList.toggle('show', has);
+        console.error(
+            'Elemento #formacoes-adicionais não encontrado.'
+        );
+
+        return;
+    }
+
+    contadorFormacoes++;
+
+    const formacao =
+        document.createElement('div');
+
+    formacao.className =
+        'formacao-extra';
+
+    formacao.dataset.formacao =
+        contadorFormacoes + 1;
+
+    formacao.innerHTML = `
+
+        <div class="formacao-extra-head">
+
+            <strong>
+                Formação ${contadorFormacoes + 1}
+            </strong>
+
+            <button
+                type="button"
+                class="btn-remover-formacao"
+                onclick="removerFormacao(this)">
+
+                Remover
+
+            </button>
+
+        </div>
+
+
+        <div class="grid">
+
+            <div class="field full">
+
+                <label>
+                    Instituição *
+                </label>
+
+                <input
+                    type="text"
+                    class="f-inst-extra"
+                    placeholder="Nome da instituição">
+
+                <div class="errmsg">
+                    Informe a instituição.
+                </div>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Curso *
+                </label>
+
+                <input
+                    type="text"
+                    class="f-curso-extra"
+                    placeholder="Nome do curso">
+
+                <div class="errmsg">
+                    Informe o curso.
+                </div>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Ano / Situação *
+                </label>
+
+                <input
+                    type="text"
+                    class="f-ano-extra"
+                    placeholder="Ex: Cursando 2º Ano">
+
+                <div class="errmsg">
+                    Informe o ano ou situação.
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    container.appendChild(formacao);
+
+    const primeiroCampo =
+        formacao.querySelector(
+            '.f-inst-extra'
+        );
+
+    if (primeiroCampo) {
+        primeiroCampo.focus();
+    }
 }
 
 
-/* =========================
+function removerFormacao(botao) {
+
+    const formacao =
+        botao.closest(
+            '.formacao-extra'
+        );
+
+    if (!formacao) {
+        return;
+    }
+
+    formacao.remove();
+
+    atualizarNumeracaoFormacoes();
+}
+
+
+function atualizarNumeracaoFormacoes() {
+
+    const formacoes =
+        document.querySelectorAll(
+            '.formacao-extra'
+        );
+
+    formacoes.forEach(
+        (formacao, index) => {
+
+            const numero =
+                index + 2;
+
+            const titulo =
+                formacao.querySelector(
+                    '.formacao-extra-head strong'
+                );
+
+            if (titulo) {
+
+                titulo.textContent =
+                    `Formação ${numero}`;
+            }
+
+            formacao.dataset.formacao =
+                numero;
+        }
+    );
+
+    contadorFormacoes =
+        formacoes.length;
+}
+
+
+function obterFormacoes() {
+
+    const formacoes = [];
+
+    const instituicao =
+        document.getElementById(
+            'f-inst'
+        );
+
+    const curso =
+        document.getElementById(
+            'f-curso'
+        );
+
+    const ano =
+        document.getElementById(
+            'f-ano'
+        );
+
+    if (
+        instituicao &&
+        curso &&
+        ano
+    ) {
+
+        formacoes.push({
+
+            inst:
+                instituicao.value.trim(),
+
+            curso:
+                curso.value.trim(),
+
+            ano:
+                ano.value.trim()
+        });
+    }
+
+
+    document
+        .querySelectorAll(
+            '.formacao-extra'
+        )
+        .forEach(formacao => {
+
+            const inst =
+                formacao
+                    .querySelector(
+                        '.f-inst-extra'
+                    )
+                    .value
+                    .trim();
+
+            const curso =
+                formacao
+                    .querySelector(
+                        '.f-curso-extra'
+                    )
+                    .value
+                    .trim();
+
+            const ano =
+                formacao
+                    .querySelector(
+                        '.f-ano-extra'
+                    )
+                    .value
+                    .trim();
+
+            formacoes.push({
+
+                inst,
+                curso,
+                ano
+            });
+        });
+
+    return formacoes;
+}
+
+
+function validarFormacoesAdicionais() {
+
+    let valido = true;
+
+    document
+        .querySelectorAll(
+            '.formacao-extra'
+        )
+        .forEach(formacao => {
+
+            const campos = [
+
+                formacao.querySelector(
+                    '.f-inst-extra'
+                ),
+
+                formacao.querySelector(
+                    '.f-curso-extra'
+                ),
+
+                formacao.querySelector(
+                    '.f-ano-extra'
+                )
+
+            ];
+
+            campos.forEach(campo => {
+
+                if (!campo) {
+                    return;
+                }
+
+                const preenchido =
+                    campo.value
+                        .trim()
+                        .length >= 2;
+
+                setError(
+                    campo,
+                    !preenchido
+                );
+
+                if (!preenchido) {
+                    valido = false;
+                }
+            });
+        });
+
+    return valido;
+}
+
+
+/* =========================================================
+   VALIDAÇÃO
+   ========================================================= */
+
+function setError(input, erro) {
+
+    if (!input) {
+        return;
+    }
+
+    input.classList.toggle(
+        'err',
+        erro
+    );
+
+    const mensagem =
+        input.parentElement
+            ?.querySelector(
+                '.errmsg'
+            );
+
+    if (mensagem) {
+
+        mensagem.classList.toggle(
+            'show',
+            erro
+        );
+    }
+}
+
+
+/* =========================================================
+   CONVERTE FOTO PARA CÍRCULO
+   ========================================================= */
+
+function criarFotoCircular(
+    dataUrl,
+    tamanho = 500
+) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const imagem =
+                new Image();
+
+            imagem.onload =
+                function () {
+
+                    const canvas =
+                        document.createElement(
+                            'canvas'
+                        );
+
+                    canvas.width =
+                        tamanho;
+
+                    canvas.height =
+                        tamanho;
+
+                    const ctx =
+                        canvas.getContext(
+                            '2d'
+                        );
+
+                    ctx.clearRect(
+                        0,
+                        0,
+                        tamanho,
+                        tamanho
+                    );
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        tamanho / 2,
+                        tamanho / 2,
+                        tamanho / 2,
+                        0,
+                        Math.PI * 2
+                    );
+
+                    ctx.closePath();
+
+                    ctx.clip();
+
+                    const proporcao =
+                        Math.max(
+                            tamanho /
+                                imagem.width,
+
+                            tamanho /
+                                imagem.height
+                        );
+
+                    const largura =
+                        imagem.width *
+                        proporcao;
+
+                    const altura =
+                        imagem.height *
+                        proporcao;
+
+                    const x =
+                        (tamanho -
+                            largura) / 2;
+
+                    const y =
+                        (tamanho -
+                            altura) / 2;
+
+                    ctx.drawImage(
+                        imagem,
+                        x,
+                        y,
+                        largura,
+                        altura
+                    );
+
+                    resolve(
+                        canvas.toDataURL(
+                            'image/png'
+                        )
+                    );
+                };
+
+            imagem.onerror =
+                reject;
+
+            imagem.src =
+                dataUrl;
+        }
+    );
+}
+
+
+/* =========================================================
    ENVIO DO FORMULÁRIO
-   ========================= */
+   ========================================================= */
 
-document.getElementById('curriculo-form')
-  .addEventListener('submit', function(e){
+document
+    .getElementById('curriculo-form')
+    .addEventListener(
+        'submit',
+        async function (event) {
 
-  // Impede o envio padrão do formulário
-  e.preventDefault();
+            event.preventDefault();
 
-  let valid=true;
-
-  // Seleciona os campos do formulário
-  const nome=document.getElementById('f-nome');
-  const cpf=document.getElementById('f-cpf');
-  const idade=document.getElementById('f-idade');
-  const cidade=document.getElementById('f-cidade');
-  const estado=document.getElementById('f-estado');
-  const email=document.getElementById('f-email');
-
-  const inst=document.getElementById('f-inst');
-  const curso=document.getElementById('f-curso');
-  const ano=document.getElementById('f-ano');
-
-  const exp=document.getElementById('f-experiencia');
+            let valido = true;
 
 
-  /* =========================
-     REGRAS DE VALIDAÇÃO
-     ========================= */
+            const nome =
+                document.getElementById(
+                    'f-nome'
+                );
 
-  const checks=[
-    [nome, nome.value.trim().length>=3],
-    [cpf, cpf.value.replace(/\D/g,'').length===11],
-    [idade, idade.value && parseInt(idade.value)>=14],
-    [cidade, cidade.value.trim().length>=2],
-    [estado,!!estado.value],
-    [email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)],
-    [inst, inst.value.trim().length>=2],
-    [curso, curso.value.trim().length>=2],
-    [ano, ano.value.trim().length>=2],
-  ];
+            const idade =
+                document.getElementById(
+                    'f-idade'
+                );
 
-  // Verifica cada campo
-  checks.forEach(([inp,ok])=>{
-    setError(inp,!ok);
+            const cidade =
+                document.getElementById(
+                    'f-cidade'
+                );
 
-    if(!ok)
-      valid=false;
-  });
+            const estado =
+                document.getElementById(
+                    'f-estado'
+                );
 
+            const email =
+                document.getElementById(
+                    'f-email'
+                );
 
-  // Experiência é obrigatória somente no modelo 02
-  if(currentModel==='experiencia'){
+            const telefone =
+                document.getElementById(
+                    'f-tel'
+                );
 
-    const okExp=exp.value.trim().length>=3;
+            const instituicao =
+                document.getElementById(
+                    'f-inst'
+                );
 
-    setError(exp,!okExp);
+            const curso =
+                document.getElementById(
+                    'f-curso'
+                );
 
-    if(!okExp)
-      valid=false;
+            const ano =
+                document.getElementById(
+                    'f-ano'
+                );
 
-  } else {
+            const experiencia =
+                document.getElementById(
+                    'f-experiencia'
+                );
 
-    setError(exp,false);
-  }
+            const objetivo =
+                document.getElementById(
+                    'f-objetivo'
+                );
 
+            const habilidades =
+                document.getElementById(
+                    'f-habilidades'
+                );
 
-  // Para o processo caso exista algum erro
-  if(!valid) return;
-
-
-  /* =========================
-     COLETA DOS DADOS
-     ========================= */
-
-  const dados={
-    nome:nome.value.trim(),
-
-    cidade:cidade.value.trim(),
-
-    estado:estado.value,
-
-    email:email.value.trim(),
-
-    tel:document.getElementById('f-tel').value.trim(),
-
-    inst:inst.value.trim(),
-
-    curso:curso.value.trim(),
-
-    ano:ano.value.trim(),
-
-    experiencia:exp.value.trim(),
-
-    habilidades:document.getElementById('f-habilidades').value.trim(),
-
-    idioma:document.getElementById('f-idioma').value.trim(),
-
-    foto:photoDataUrl
-  };
+            const cursos =
+                document.getElementById(
+                    'f-cursos'
+                );
 
 
-  /* =========================
-     GERAÇÃO DO PDF
-     ========================= */
+            /* =================================================
+               VALIDAÇÃO
+               ================================================= */
 
-  if(currentModel==='formacao')
-    gerarPdfFormacao(dados);
-  else
-    gerarPdfExperiencia(dados);
+            const campos = [
 
-});
+                [
+                    nome,
+                    nome &&
+                    nome.value.trim().length >= 3
+                ],
+
+                [
+                    idade,
+                    idade &&
+                    parseInt(
+                        idade.value
+                    ) >= 14
+                ],
+
+                [
+                    cidade,
+                    cidade &&
+                    cidade.value.trim().length >= 2
+                ],
+
+                [
+                    estado,
+                    estado &&
+                    !!estado.value
+                ],
+
+                [
+                    email,
+                    email &&
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                        .test(
+                            email.value
+                        )
+                ],
+
+                [
+                    instituicao,
+                    instituicao &&
+                    instituicao.value
+                        .trim()
+                        .length >= 2
+                ],
+
+                [
+                    curso,
+                    curso &&
+                    curso.value
+                        .trim()
+                        .length >= 2
+                ],
+
+                [
+                    ano,
+                    ano &&
+                    ano.value
+                        .trim()
+                        .length >= 2
+                ],
+
+                [
+                    objetivo,
+                    objetivo &&
+                    objetivo.value
+                        .trim()
+                        .length >= 3
+                ]
+
+            ];
 
 
-/* =========================
-   BASE DO PDF
-   ========================= */
+            campos.forEach(
+                ([campo, correto]) => {
 
-// Cria a estrutura básica do currículo
-function gerarPdfBase(d){
+                    setError(
+                        campo,
+                        !correto
+                    );
 
-  const {jsPDF}=window.jspdf;
-
-  // Cria um PDF no formato A4
-  const doc=new jsPDF({
-    unit:'mm',
-    format:'a4'
-  });
-
-  // Define a largura da lateral
-  const sidebarW=60;
+                    if (!correto) {
+                        valido = false;
+                    }
+                }
+            );
 
 
-  // Cria o fundo azul da lateral
-  doc.setFillColor(192,224,252);
-  doc.rect(0,0,sidebarW,297,'F');
+            if (
+                currentModel ===
+                'experiencia'
+            ) {
+
+                const experienciaValida =
+                    experiencia &&
+                    experiencia.value
+                        .trim()
+                        .length >= 3;
+
+                setError(
+                    experiencia,
+                    !experienciaValida
+                );
+
+                if (!experienciaValida) {
+                    valido = false;
+                }
+
+            } else {
+
+                setError(
+                    experiencia,
+                    false
+                );
+            }
 
 
-  let sideY=12;
+            if (
+                !validarFormacoesAdicionais()
+            ) {
+
+                valido = false;
+            }
 
 
-  // Adiciona a foto caso exista
-  if(d.foto){
+            if (!valido) {
 
-    doc.addImage(
-      d.foto,
-      'JPEG',
-      11,
-      sideY,
-      38,
-      38
+                alert(
+                    'Preencha corretamente os campos obrigatórios.'
+                );
+
+                return;
+            }
+
+
+            /* =================================================
+               COLETA DOS DADOS
+               ================================================= */
+
+            const dados = {
+
+                nome:
+                    nome.value.trim(),
+
+                idade:
+                    idade.value.trim(),
+
+                cidade:
+                    cidade.value.trim(),
+
+                estado:
+                    estado.value,
+
+                email:
+                    email.value.trim(),
+
+                tel:
+                    telefone
+                        ? telefone.value.trim()
+                        : '',
+
+                inst:
+                    instituicao.value.trim(),
+
+                curso:
+                    curso.value.trim(),
+
+                ano:
+                    ano.value.trim(),
+
+                formacoes:
+                    obterFormacoes(),
+
+                objetivo:
+                    objetivo
+                        ? objetivo.value.trim()
+                        : '',
+
+                experiencia:
+                    experiencia
+                        ? experiencia.value.trim()
+                        : '',
+
+                habilidades:
+                    habilidades
+                        ? habilidades.value.trim()
+                        : '',
+
+                cursos:
+                    cursos
+                        ? cursos.value.trim()
+                        : '',
+
+                foto:
+                    photoDataUrl
+            };
+
+
+            /* =================================================
+               GERAÇÃO DO PDF
+               ================================================= */
+
+            try {
+
+                if (currentModel === 'formacao') {
+
+                    await gerarPdfFormacao(
+                        dados
+                    );
+
+                } else {
+
+                    await gerarPdfExperiencia(
+                        dados
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    'Ocorreu um erro ao gerar o PDF.'
+                );
+            }
+
+        }
     );
 
-    sideY+=44;
 
-  } else {
+/* =========================================================
+   CONFIGURAÇÃO BASE DO PDF
+   ========================================================= */
 
-    // Sem foto, continua normalmente
-    sideY+=2;
-  }
+async function gerarPdfBase(dados) {
+
+    const { jsPDF } =
+        window.jspdf;
+
+    const doc =
+        new jsPDF({
+
+            unit: 'mm',
+
+            format: 'a4'
+        });
 
 
-  // Cor dos textos principais do PDF
-  const dark=[30,58,95];
+    const sidebarW = 60;
+
+    const larguraPagina = 210;
+
+    const alturaPagina = 297;
+
+    const mainX =
+        sidebarW + 10;
 
 
-  /* =========================
-     FUNÇÕES DA LATERAL
-     ========================= */
+    /* =================================================
+       FUNDO DA LATERAL
+       ================================================= */
 
-  // Cria um título na lateral
-  function sideTitle(t,y){
-
-    doc.setFont('helvetica','bold');
-
-    doc.setFontSize(9);
-
-    doc.setTextColor(
-      dark[0],
-      dark[1],
-      dark[2]
+    doc.setFillColor(
+        192,
+        224,
+        252
     );
 
-    doc.text(
-      t.toUpperCase(),
-      10,
-      y
+    doc.rect(
+        0,
+        0,
+        sidebarW,
+        alturaPagina,
+        'F'
     );
 
-    y+=2.5;
 
-    doc.setDrawColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
+    /* =================================================
+       FOTO CIRCULAR
+       ================================================= */
 
-    doc.setLineWidth(0.3);
+    let sideY = 12;
 
-    doc.line(
-      10,
-      y,
-      sidebarW-10,
-      y
-    );
+    if (dados.foto) {
 
-    y+=5;
+        try {
 
-    return y;
-  }
+            const fotoCircular =
+                await criarFotoCircular(
+                    dados.foto
+                );
 
+            doc.addImage(
+                fotoCircular,
+                'PNG',
+                11,
+                sideY,
+                38,
+                38
+            );
 
-  // Adiciona texto na lateral
-  function sideText(txt,y,size=8,bold=false){
+            sideY += 44;
 
-    doc.setFont(
-      'helvetica',
-      bold?'bold':'normal'
-    );
+        } catch (error) {
 
-    doc.setFontSize(size);
+            console.error(
+                'Erro ao processar foto:',
+                error
+            );
+        }
 
-    doc.setTextColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
+    } else {
 
-    const lines=doc.splitTextToSize(
-      txt,
-      sidebarW-20
-    );
-
-    doc.text(lines,10,y);
-
-    return y+lines.length*3.2+2;
-  }
-
-
-  /* =========================
-     INFORMAÇÕES DA LATERAL
-     ========================= */
-
-  sideY=sideTitle(
-    'Contato',
-    sideY
-  );
-
-  sideY=sideText(
-    `${d.cidade} / ${d.estado}`,
-    sideY,
-    7.5,
-    true
-  );
-
-  if(d.tel)
-    sideY=sideText(
-      d.tel,
-      sideY,
-      7.5,
-      false
-    );
-
-  sideY=sideText(
-    d.email,
-    sideY,
-    7,
-    false
-  );
-
-
-  sideY=sideTitle(
-    'Formação Acadêmica',
-    sideY
-  );
-
-  sideY=sideText(
-    d.curso,
-    sideY,
-    8,
-    true
-  );
-
-  sideY=sideText(
-    d.inst,
-    sideY,
-    7.5,
-    false
-  );
-
-  sideY=sideText(
-    d.ano,
-    sideY,
-    7,
-    false
-  );
-
-
-  // Adiciona idiomas se o usuário preencher
-  if(d.idioma){
-
-    sideY=sideTitle(
-      'Idiomas',
-      sideY
-    );
-
-    sideY=sideText(
-      d.idioma,
-      sideY,
-      7.5,
-      false
-    );
-  }
-
-
-  // Adiciona habilidades se o usuário preencher
-  if(d.habilidades){
-
-    sideY=sideTitle(
-      'Habilidades',
-      sideY
-    );
-
-    sideY=sideText(
-      d.habilidades,
-      sideY,
-      7.5,
-      false
-    );
-  }
-
-
-  /* =========================
-     ÁREA PRINCIPAL DO PDF
-     ========================= */
-
-  const mainX=sidebarW+10;
-
-  let my=18;
-
-  doc.setFont(
-    'helvetica',
-    'bold'
-  );
-
-  doc.setFontSize(20);
-
-  doc.setTextColor(
-    dark[0],
-    dark[1],
-    dark[2]
-  );
-
-
-  // Exibe o nome do candidato em destaque
-  const nomeU=d.nome.toUpperCase();
-
-  doc.text(
-    nomeU,
-    mainX,
-    my
-  );
-
-  my+=9;
-
-
-  // Retorna os elementos necessários para os outros modelos
-  return {
-    doc,
-    mainX,
-    my,
-    dark
-  };
-}
-
-
-/* =========================
-   PDF - MODELO FORMAÇÃO
-   ========================= */
-
-// Gera o currículo do modelo 01
-function gerarPdfFormacao(d){
-
-  const {
-    doc,
-    mainX,
-    my,
-    dark
-  }=gerarPdfBase(d);
-
-  let y=my;
-
-
-  // Cria títulos das seções
-  function secTitle(t){
-
-    doc.setFont(
-      'helvetica',
-      'bold'
-    );
-
-    doc.setFontSize(11);
-
-    doc.setTextColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
-
-    doc.text(
-      t.toUpperCase(),
-      mainX,
-      y
-    );
-
-    y+=3;
-
-    doc.setDrawColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
-
-    doc.setLineWidth(0.4);
-
-    doc.line(
-      mainX,
-      y,
-      200,
-      y
-    );
-
-    y+=7;
-  }
-
-
-  // Adiciona textos ao corpo do currículo
-  function body(txt){
-
-    doc.setFont(
-      'helvetica',
-      'normal'
-    );
-
-    doc.setFontSize(9);
-
-    doc.setTextColor(
-      40,
-      40,
-      40
-    );
-
-    const lines=doc.splitTextToSize(
-      txt,
-      210-mainX-10
-    );
-
-    // Limita o conteúdo para uma página
-    if(y+lines.length*4>280){
-      lines.length=Math.floor(
-        (280-y)/4
-      );
+        sideY += 2;
     }
 
-    doc.text(
-      lines,
-      mainX,
-      y
-    );
 
-    y+=lines.length*4+8;
-  }
+    const dark =
+        [30, 58, 95];
 
 
-  // Experiência é opcional nesse modelo
-  if(d.experiencia){
+    /* =================================================
+       FUNÇÕES DA LATERAL
+       ================================================= */
 
-    secTitle(
-      'Experiência Profissional'
-    );
+    function sideTitle(
+        titulo,
+        y
+    ) {
 
-    body(d.experiencia);
-  }
+        doc.setFont(
+            'helvetica',
+            'bold'
+        );
 
+        doc.setFontSize(10);
 
-  secTitle(
-    'Cursos Complementares'
-  );
+        doc.setTextColor(
+            dark[0],
+            dark[1],
+            dark[2]
+        );
 
-  body(
-    d.habilidades
-      ? d.habilidades
-      : 'Informática Básica, Pacote Office, Boa Comunicação, Trabalho em Equipe.'
-  );
+        doc.text(
+            titulo.toUpperCase(),
+            10,
+            y
+        );
 
+        y += 3;
 
-  // Salva o PDF no computador
-  doc.save(
-    `curriculo-${slug(d.nome)}-formacao.pdf`
-  );
-}
+        doc.setDrawColor(
+            dark[0],
+            dark[1],
+            dark[2]
+        );
 
+        doc.setLineWidth(
+            0.3
+        );
 
-/* =========================
-   PDF - MODELO EXPERIÊNCIA
-   ========================= */
+        doc.line(
+            10,
+            y,
+            sidebarW - 10,
+            y
+        );
 
-// Gera o currículo do modelo 02
-function gerarPdfExperiencia(d){
+        y += 5;
 
-  const {
-    doc,
-    mainX,
-    my,
-    dark
-  }=gerarPdfBase(d);
-
-  let y=my;
-
-
-  // Cria títulos das seções
-  function secTitle(t){
-
-    doc.setFont(
-      'helvetica',
-      'bold'
-    );
-
-    doc.setFontSize(11);
-
-    doc.setTextColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
-
-    doc.text(
-      t.toUpperCase(),
-      mainX,
-      y
-    );
-
-    y+=3;
-
-    doc.setDrawColor(
-      dark[0],
-      dark[1],
-      dark[2]
-    );
-
-    doc.setLineWidth(0.4);
-
-    doc.line(
-      mainX,
-      y,
-      200,
-      y
-    );
-
-    y+=7;
-  }
-
-
-  // Adiciona textos ao corpo do currículo
-  function body(txt){
-
-    doc.setFont(
-      'helvetica',
-      'normal'
-    );
-
-    doc.setFontSize(9);
-
-    doc.setTextColor(
-      40,
-      40,
-      40
-    );
-
-    const lines=doc.splitTextToSize(
-      txt,
-      210-mainX-10
-    );
-
-    // Limita o conteúdo para uma página
-    if(y+lines.length*4>280){
-      lines.length=Math.floor(
-        (280-y)/4
-      );
+        return y;
     }
 
-    doc.text(
-      lines,
-      mainX,
-      y
+
+    function sideText(
+        texto,
+        y,
+        tamanho = 9,
+        negrito = false
+    ) {
+
+        if (!texto) {
+            return y;
+        }
+
+        doc.setFont(
+            'helvetica',
+            negrito
+                ? 'bold'
+                : 'normal'
+        );
+
+        doc.setFontSize(
+            tamanho
+        );
+
+        doc.setTextColor(
+            dark[0],
+            dark[1],
+            dark[2]
+        );
+
+        const linhas =
+            doc.splitTextToSize(
+                texto,
+                sidebarW - 20
+            );
+
+        doc.text(
+            linhas,
+            10,
+            y
+        );
+
+        return (
+            y +
+            linhas.length * 3.5 +
+            2
+        );
+    }
+
+
+    /* =================================================
+       CONTATO
+       ================================================= */
+
+    sideY =
+        sideTitle(
+            'Contato',
+            sideY
+        );
+
+
+    sideY =
+        sideText(
+            `${dados.cidade} / ${dados.estado}`,
+            sideY,
+            8.5,
+            true
+        );
+
+
+    if (dados.tel) {
+
+        sideY =
+            sideText(
+                dados.tel,
+                sideY,
+                8
+            );
+    }
+
+
+    sideY =
+        sideText(
+            dados.email,
+            sideY,
+            7.5
+        );
+
+
+    /* =================================================
+       FORMAÇÃO NA LATERAL
+       ================================================= */
+
+    sideY =
+        sideTitle(
+            'Formação Acadêmica',
+            sideY
+        );
+
+
+    dados.formacoes.forEach(
+        formacao => {
+
+            if (
+                formacao.curso
+            ) {
+
+                sideY =
+                    sideText(
+                        formacao.curso,
+                        sideY,
+                        8.5,
+                        true
+                    );
+            }
+
+            if (
+                formacao.inst
+            ) {
+
+                sideY =
+                    sideText(
+                        formacao.inst,
+                        sideY,
+                        7.5
+                    );
+            }
+
+            if (
+                formacao.ano
+            ) {
+
+                sideY =
+                    sideText(
+                        formacao.ano,
+                        sideY,
+                        7.5
+                    );
+            }
+        }
     );
 
-    y+=lines.length*4+8;
-  }
+    /* =================================================
+       NOME
+       ================================================= */
+
+    let mainY = 18;
+
+    doc.setFont(
+        'helvetica',
+        'bold'
+    );
+
+    doc.setFontSize(
+        20
+    );
+
+    doc.setTextColor(
+        dark[0],
+        dark[1],
+        dark[2]
+    );
 
 
-  // Resumo profissional
-  secTitle('Resumo');
-
-  body(
-    `Profissional com experiência em ${d.experiencia.substring(0,60)}... Busco oportunidade para aplicar conhecimentos em ${d.curso}.`
-  );
-
-
-  // Experiência profissional
-  secTitle(
-    'Experiência Profissional'
-  );
-
-  body(d.experiencia);
+    doc.text(
+        dados.nome
+            .toUpperCase(),
+        mainX,
+        mainY
+    );
 
 
-  // Formação acadêmica
-  secTitle(
-    'Formação Acadêmica'
-  );
-
-  body(
-    `${d.curso} - ${d.inst} - ${d.ano}`
-  );
+    mainY += 10;
 
 
-  // Salva o PDF
-  doc.save(
-    `curriculo-${slug(d.nome)}-experiencia.pdf`
-  );
+    return {
+
+        doc,
+
+        mainX,
+
+        mainY,
+
+        dark,
+
+        larguraPagina,
+
+        alturaPagina
+    };
 }
 
 
-/* =========================
+/* =========================================================
+   FUNÇÕES DE TEXTO DO PDF
+   ========================================================= */
+
+function criarTituloSecao(
+    doc,
+    titulo,
+    x,
+    y,
+    dark
+) {
+
+    doc.setFont(
+        'helvetica',
+        'bold'
+    );
+
+    doc.setFontSize(
+        11
+    );
+
+    doc.setTextColor(
+        dark[0],
+        dark[1],
+        dark[2]
+    );
+
+    doc.text(
+        titulo.toUpperCase(),
+        x,
+        y
+    );
+
+    y += 3;
+
+    doc.setDrawColor(
+        dark[0],
+        dark[1],
+        dark[2]
+    );
+
+    doc.setLineWidth(
+        0.4
+    );
+
+    doc.line(
+        x,
+        y,
+        200,
+        y
+    );
+
+    return y + 7;
+}
+
+
+function escreverTextoPDF(
+    doc,
+    texto,
+    x,
+    y,
+    largura
+) {
+
+    if (!texto) {
+        return y;
+    }
+
+    doc.setFont(
+        'helvetica',
+        'normal'
+    );
+
+    doc.setFontSize(
+        10
+    );
+
+    doc.setTextColor(
+        40,
+        40,
+        40
+    );
+
+    const linhas =
+        doc.splitTextToSize(
+            texto,
+            largura
+        );
+
+    doc.text(
+        linhas,
+        x,
+        y
+    );
+
+    return (
+        y +
+        linhas.length * 4 +
+        5
+    );
+}
+
+
+/* =========================================================
+   MODELO 01
+   ========================================================= */
+
+async function gerarPdfFormacao(
+    dados
+) {
+
+    const {
+
+        doc,
+
+        mainX,
+
+        mainY,
+
+        dark
+
+    } =
+        await gerarPdfBase(
+            dados
+        );
+
+
+    let y = mainY;
+
+
+    /* =================================================
+       OBJETIVO PROFISSIONAL
+       ================================================= */
+
+    if (dados.objetivo) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Objetivo Profissional',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.objetivo,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       EXPERIÊNCIA
+       ================================================= */
+
+    if (dados.experiencia) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Experiência Profissional',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.experiencia,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       FORMAÇÃO ACADÊMICA
+       ================================================= */
+
+    y =
+        criarTituloSecao(
+            doc,
+            'Formação Acadêmica',
+            mainX,
+            y,
+            dark
+        );
+
+
+    dados.formacoes.forEach(
+        (formacao, index) => {
+
+            if (
+                !formacao.inst &&
+                !formacao.curso &&
+                !formacao.ano
+            ) {
+                return;
+            }
+
+
+            doc.setFont(
+                'helvetica',
+                'bold'
+            );
+
+            doc.setFontSize(
+                10
+            );
+
+            doc.setTextColor(
+                40,
+                40,
+                40
+            );
+
+
+            doc.text(
+                `${index + 1}. ${formacao.curso}`,
+                mainX,
+                y
+            );
+
+            y += 5;
+
+
+            doc.setFont(
+                'helvetica',
+                'normal'
+            );
+
+            doc.text(
+                formacao.inst,
+                mainX,
+                y
+            );
+
+            y += 5;
+
+
+            doc.text(
+                formacao.ano,
+                mainX,
+                y
+            );
+
+            y += 7;
+        }
+    );
+
+
+    /* =================================================
+       CURSOS E CERTIFICAÇÕES
+       ================================================= */
+
+    if (dados.cursos) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Cursos e Certificações',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.cursos,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       HABILIDADES
+       ================================================= */
+
+    if (dados.habilidades) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Habilidades e Competências',
+                mainX,
+                y,
+                dark
+            );
+
+        escreverTextoPDF(
+            doc,
+            dados.habilidades,
+            mainX,
+            y,
+            140
+        );
+    }
+
+
+    doc.save(
+        `curriculo-${slug(
+            dados.nome
+        )}-formacao.pdf`
+    );
+}
+
+
+/* =========================================================
+   MODELO 02
+   ========================================================= */
+
+async function gerarPdfExperiencia(
+    dados
+) {
+
+    const {
+
+        doc,
+
+        mainX,
+
+        mainY,
+
+        dark
+
+    } =
+        await gerarPdfBase(
+            dados
+        );
+
+
+    let y = mainY;
+
+
+    /* =================================================
+       OBJETIVO
+       ================================================= */
+
+    if (dados.objetivo) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Objetivo Profissional',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.objetivo,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       EXPERIÊNCIA
+       ================================================= */
+
+    if (dados.experiencia) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Experiência Profissional',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.experiencia,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       FORMAÇÃO
+       ================================================= */
+
+    y =
+        criarTituloSecao(
+            doc,
+            'Formação Acadêmica',
+            mainX,
+            y,
+            dark
+        );
+
+
+    dados.formacoes.forEach(
+        (formacao, index) => {
+
+            if (
+                !formacao.inst &&
+                !formacao.curso &&
+                !formacao.ano
+            ) {
+                return;
+            }
+
+
+            doc.setFont(
+                'helvetica',
+                'bold'
+            );
+
+            doc.setFontSize(
+                10
+            );
+
+            doc.setTextColor(
+                40,
+                40,
+                40
+            );
+
+
+            doc.text(
+                `${index + 1}. ${formacao.curso}`,
+                mainX,
+                y
+            );
+
+            y += 5;
+
+
+            doc.setFont(
+                'helvetica',
+                'normal'
+            );
+
+            doc.text(
+                formacao.inst,
+                mainX,
+                y
+            );
+
+            y += 5;
+
+
+            doc.text(
+                formacao.ano,
+                mainX,
+                y
+            );
+
+            y += 7;
+        }
+    );
+
+
+    /* =================================================
+       CURSOS
+       ================================================= */
+
+    if (dados.cursos) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Cursos e Certificações',
+                mainX,
+                y,
+                dark
+            );
+
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.cursos,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       HABILIDADES
+       ================================================= */
+
+    if (dados.habilidades) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Habilidades e Competências',
+                mainX,
+                y,
+                dark
+            );
+
+        escreverTextoPDF(
+            doc,
+            dados.habilidades,
+            mainX,
+            y,
+            140
+        );
+    }
+
+
+    doc.save(
+        `curriculo-${slug(
+            dados.nome
+        )}-experiencia.pdf`
+    );
+}
+
+
+/* =========================================================
    NOME DO ARQUIVO
-   ========================= */
+   ========================================================= */
 
-// Transforma o nome em um formato adequado para o nome do PDF
-function slug(s){
+function slug(texto) {
 
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'-')
-    || 'candidato';
+    return texto
+
+        .toLowerCase()
+
+        .normalize('NFD')
+
+        .replace(
+            /[\u0300-\u036f]/g,
+            ''
+        )
+
+        .replace(
+            /[^a-z0-9]+/g,
+            '-'
+        )
+
+        .replace(
+            /^-+|-+$/g,
+            ''
+        )
+
+        || 'candidato';
 }
+
+
+/* =========================================================
+   GARANTE QUE AS FUNÇÕES FIQUEM DISPONÍVEIS NO HTML
+   ========================================================= */
+
+window.goToForm =
+    goToForm;
+
+window.goToWelcome =
+    goToWelcome;
+
+window.toggleCamera =
+    toggleCamera;
+
+window.capturePhoto =
+    capturePhoto;
+
+window.handleFileSelect =
+    handleFileSelect;
+
+window.retakePhoto =
+    retakePhoto;
+
+window.adicionarFormacao =
+    adicionarFormacao;
+
+window.removerFormacao =
+    removerFormacao;
