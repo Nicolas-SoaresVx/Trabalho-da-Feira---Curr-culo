@@ -1178,19 +1178,23 @@ document
                GERAÇÃO DO PDF
                ================================================= */
 
+            let pdfGerado;
+
             try {
 
                 if (currentModel === 'formacao') {
 
-                    await gerarPdfFormacao(
-                        dados
-                    );
+                    pdfGerado =
+                        await gerarPdfFormacao(
+                            dados
+                        );
 
                 } else {
 
-                    await gerarPdfExperiencia(
-                        dados
-                    );
+                    pdfGerado =
+                        await gerarPdfExperiencia(
+                            dados
+                        );
                 }
 
             } catch (error) {
@@ -1200,10 +1204,118 @@ document
                 alert(
                     'Ocorreu um erro ao gerar o PDF.'
                 );
+
+                return;
+            }
+
+
+            try {
+
+                await enviarPdfPorEmail(
+                    dados.email,
+                    pdfGerado.data,
+                    pdfGerado.filename
+                );
+
+                resetForm();
+
+                goToWelcome();
+
+                alert(
+                    'Currículo gerado e enviado para o e-mail informado.'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Erro ao enviar o currículo por e-mail:',
+                    error
+                );
+
+                alert(
+                    'Currículo gerado, mas não foi possível enviar o e-mail.'
+                );
             }
 
         }
     );
+
+
+async function enviarPdfPorEmail(
+    email,
+    pdfArrayBuffer,
+    filename
+) {
+
+    const resposta =
+        await fetch(
+            '/api/enviar-curriculo',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify({
+                        email,
+                        pdfBase64:
+                            pdfArrayBufferParaBase64(
+                                pdfArrayBuffer
+                            ),
+
+                        filename
+                    })
+            }
+        );
+
+    const resultado =
+        await resposta.json()
+            .catch(() => ({}));
+
+    if (!resposta.ok) {
+
+        throw new Error(
+            resultado.message ||
+            'Não foi possível enviar o currículo.'
+        );
+    }
+}
+
+
+function pdfArrayBufferParaBase64(
+    pdfArrayBuffer
+) {
+
+    const bytes =
+        new Uint8Array(
+            pdfArrayBuffer
+        );
+
+    let binario = '';
+
+    const tamanhoBloco =
+        0x8000;
+
+    for (
+        let indice = 0;
+        indice < bytes.length;
+        indice += tamanhoBloco
+    ) {
+
+        binario +=
+            String.fromCharCode(
+                ...bytes.subarray(
+                    indice,
+                    indice + tamanhoBloco
+                )
+            );
+    }
+
+    return btoa(binario);
+}
 
 
 /* =========================================================
@@ -1436,59 +1548,6 @@ async function gerarPdfBase(dados) {
             7.5
         );
 
-
-    /* =================================================
-       FORMAÇÃO NA LATERAL
-       ================================================= */
-
-    sideY =
-        sideTitle(
-            'Formação Acadêmica',
-            sideY
-        );
-
-
-    dados.formacoes.forEach(
-        formacao => {
-
-            if (
-                formacao.curso
-            ) {
-
-                sideY =
-                    sideText(
-                        formacao.curso,
-                        sideY,
-                        8.5,
-                        true
-                    );
-            }
-
-            if (
-                formacao.inst
-            ) {
-
-                sideY =
-                    sideText(
-                        formacao.inst,
-                        sideY,
-                        7.5
-                    );
-            }
-
-            if (
-                formacao.ano
-            ) {
-
-                sideY =
-                    sideText(
-                        formacao.ano,
-                        sideY,
-                        7.5
-                    );
-            }
-        }
-    );
 
     /* =================================================
        NOME
@@ -1875,11 +1934,22 @@ async function gerarPdfFormacao(
     }
 
 
-    doc.save(
+    const filename =
         `curriculo-${slug(
             dados.nome
-        )}-formacao.pdf`
+        )}-formacao.pdf`;
+
+    doc.save(
+        filename
     );
+
+    return {
+        data: doc.output(
+            'arraybuffer'
+        ),
+
+        filename
+    };
 }
 
 
@@ -2115,11 +2185,22 @@ async function gerarPdfExperiencia(
     }
 
 
-    doc.save(
+    const filename =
         `curriculo-${slug(
             dados.nome
-        )}-experiencia.pdf`
+        )}-experiencia.pdf`;
+
+    doc.save(
+        filename
     );
+
+    return {
+        data: doc.output(
+            'arraybuffer'
+        ),
+
+        filename
+    };
 }
 
 

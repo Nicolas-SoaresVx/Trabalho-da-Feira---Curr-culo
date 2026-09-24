@@ -1,0 +1,13 @@
+{
+  "name": "protocolo-de-curriculos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador de currículos com envio do PDF por e-mail.",
+  "main": "server.js",
+  "scripts": {
+  "start": "node --env-file=.env server.js"
+},
+  "dependencies": {
+    "nodemailer": "^10.0.10"
+  }
+}
