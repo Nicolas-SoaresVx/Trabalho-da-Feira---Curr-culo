@@ -2153,6 +2153,31 @@ function slug(texto) {
         || 'candidato';
 }
 
+document.querySelectorAll('#f-experiencia, #f-habilidades, #f-cursos, #f-informacoes-adicionais').forEach(textarea => {
+    textarea.addEventListener('focus', function() {
+        if (this.value.trim() === '') {
+            this.value = '• ';
+        }
+    });
+
+    textarea.addEventListener('blur', function() {
+        if (this.value.trim() === '•') {
+            this.value = '';
+        }
+    });
+
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '\n• ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 3;
+        }
+    });
+});
+
+
 
 /* =========================================================
    GARANTE QUE AS FUNÇÕES FIQUEM DISPONÍVEIS NO HTML
