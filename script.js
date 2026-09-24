@@ -962,6 +962,11 @@ document
                     'f-cursos'
                 );
 
+            const informacoesAdicionais =
+                document.getElementById(
+                    'f-informacoes-adicionais'
+                );
+
 
             /* =================================================
                VALIDAÇÃO
@@ -1157,6 +1162,11 @@ document
                 cursos:
                     cursos
                         ? cursos.value.trim()
+                        : '',
+
+                informacoesAdicionais:
+                    informacoesAdicionais
+                        ? informacoesAdicionais.value.trim()
                         : '',
 
                 foto:
@@ -1829,9 +1839,35 @@ async function gerarPdfFormacao(
                 dark
             );
 
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.habilidades,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       INFORMAÇÕES ADICIONAIS
+       ================================================= */
+
+    if (dados.informacoesAdicionais) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Informações Adicionais',
+                mainX,
+                y,
+                dark
+            );
+
         escreverTextoPDF(
             doc,
-            dados.habilidades,
+            dados.informacoesAdicionais,
             mainX,
             y,
             140
@@ -2043,9 +2079,35 @@ async function gerarPdfExperiencia(
                 dark
             );
 
+        y =
+            escreverTextoPDF(
+                doc,
+                dados.habilidades,
+                mainX,
+                y,
+                140
+            );
+    }
+
+
+    /* =================================================
+       INFORMAÇÕES ADICIONAIS
+       ================================================= */
+
+    if (dados.informacoesAdicionais) {
+
+        y =
+            criarTituloSecao(
+                doc,
+                'Informações Adicionais',
+                mainX,
+                y,
+                dark
+            );
+
         escreverTextoPDF(
             doc,
-            dados.habilidades,
+            dados.informacoesAdicionais,
             mainX,
             y,
             140
